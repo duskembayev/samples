@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.Build.Evaluation;
 
 namespace ManagedLibrary
 {
@@ -20,9 +20,7 @@ namespace ManagedLibrary
 
         public delegate int ReportProgressFunction(int progress);
 
-        // This test method doesn't actually do anything, it just takes some input parameters,
-        // waits (in a loop) for a bit, invoking the callback function periodically, and
-        // then returns a string version of the double[] passed in.
+        // This method is invoked by unmanaged code.
         [return: MarshalAs(UnmanagedType.LPStr)]
         public static string DoWork(
             [MarshalAs(UnmanagedType.LPStr)] string jobName,
@@ -31,25 +29,19 @@ namespace ManagedLibrary
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] double[] data,
             ReportProgressFunction reportProgressFunction)
         {
-            for (int i = 1; i <= iterations; i++)
+            // Uncomment line below to take time for debugger attach.
+            // Thread.Sleep(15000);
+
+            try
             {
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"Beginning work iteration {i}");
-                Console.ResetColor();
-
-                // Pause as if doing work
-                Thread.Sleep(1000);
-
-                // Call the native callback and write its return value to the console
-                var progressResponse = reportProgressFunction(i);
-                Console.WriteLine($"Received response [{progressResponse}] from progress function");
+                ProjectCollection projectCollection = new ProjectCollection();
+            }
+            catch (Exception e)
+            {
+                return e.Message;
             }
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"Work completed");
-            Console.ResetColor();
-
-            return $"Data received: {string.Join(", ", data.Select(d => d.ToString()))}";
+            return "Success";
         }
     }
 }
